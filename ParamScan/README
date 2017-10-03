@@ -1,0 +1,14 @@
+Scope: understand what parameters are important in the optimization
+
+Workflow: 
+Preparation steps:
+0) Identify and filter events of interest in the MC
+
+1) produce several .fcl files with 1 parameter changed at a time by:
+> python parameterMap.py
+
+2) run them on a subset of MC events (~600 evts). E.g.
+> lar -c TrjClusterBaseLArIAT_PAR13.fcl ../misfits/filtered_output_*
+
+3) evaluate if something in the recoL-trueL plot changed compared to the baseline.
+

@@ -1,0 +1,227 @@
+#include "services_lariat.fcl"
+#include "caldata_lariat.fcl"
+#include "hitfindermodules.fcl"
+#include "lariatclustermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "calorimetry.fcl"
+#include "particleid.fcl"
+#include "showerreco3d.fcl"
+#include "showerquality.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatcheckmodules.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+#include "cluster_lariat.fcl"
+#include "showerfindermodules.fcl"
+##include "pandoramodules.fcl"
+##include "resourcetracking_services.fcl"
+ 
+process_name: Reco2D
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "anaTree_histo_baseline.root" }
+ #@table::standard_resourcetrackers
+  RandomNumberGenerator: {} #ART native random number generator
+  #message:      @local::lariat_message_services
+  @table::lariat_services
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+
+tpcreco: [ caldata,
+           gaushit,
+           trajcluster,
+           pmtracktc
+#           calo
+           ]
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:
+ {
+
+ 
+   ### calwire producers ###
+  caldata:              @local::lariat_calroi
+
+  ### hit-finder producers ###
+  gaushit:             @local::gaus_hitfinder
+ 
+  ### cluster-finder producers
+#  linecluster:          @local::standard_linecluster
+  trajcluster:          @local::standard_trajcluster
+#  blurredcluster:       @local::standard_blurredcluster
+
+  ### track-finder producers
+  pmtracktc:              @local::standard_pmalgtrackmaker
+  calo:                 @local::standard_calodata
+
+ }
+ analyzers:
+{
+# anatree: @local::lariat_anatree
+ TruthTeller:
+    {
+      # The "module_type" tells us which module to run. The name here
+      # matches the name supplied to DEFINE_ART_MODULE near the end of
+      # DataQuality_module.cc.
+
+      module_type:      "TTreeIntTrackingEff"
+      TrackModuleLabel: "pmtracktc"
+      }
+ }
+
+ #define the producer and filter modules for this path, order matters, 
+ #filters reject all following items.  see lines starting physics.producers below
+ reco: [  @sequence::tpcreco ]
+	  
+ ana: [  TruthTeller ]
+
+ #define the output stream, there could be more than one if using filters 
+ stream1:  [ ]#out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [reco] 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [ana,stream1]  
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   #fileName:    "%ifb_%tc_reco2D.root"
+   fileName:    "%ifb_Reco2dTracking.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+services.message.destinations :
+{
+  STDCOUT: 
+  {
+     type:      "cout"      #tells the message service to output this destination to cout
+     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
+     append:     true       #says to append all messages to the output
+     categories:
+     {
+       ChannelFilter:
+       {
+         limit: 0
+         reportEvery: 0
+       }
+       TrackStitcher:
+       {
+         limit: 0
+         reportEvery: 0
+       }
+       CRHitRemoval:
+       {
+         limit: 0
+         reportEvery: 0
+       }
+       default:
+       {
+         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
+         reportEvery: 1
+       }
+     }
+  }
+}
+
+
+### Here, we overwrite ALL module labels with the ones defined above.
+physics.reco: [ @sequence::tpcreco ]
+
+##################################################
+### Detector properties
+services.DetectorPropertiesService.TimeOffsetV: 0.0
+services.DetectorPropertiesService.Electronlifetime: 1600
+services.DetectorPropertiesService.TimeOffsetV: -2.0
+
+
+##################################################
+### Hit parameters
+physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
+physics.producers.gaushit.Chi2NDFRetry:                          1000.
+
+
+##################################################
+### Trajectory cluster
+physics.producers.trajcluster.TrajClusterAlg.DebugPlane:     -1
+physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
+physics.producers.trajcluster.TrajClusterAlg.DebugTick:       0
+physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
+
+
+physics.producers.trajcluster.TrajClusterAlg.MinPts: [PAR0, PAR1] #[5,5] 
+physics.producers.trajcluster.TrajClusterAlg.MinPtsFit: [PAR2, PAR3] # [4,4] 
+physics.producers.trajcluster.TrajClusterAlg.MinMCSMom: [PAR4, PAR5] # [0,0]
+physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode: [0,1] # first pass: keep only tracks that are not very angled. Second pass: release this constraint a bit
+#physics.producers.trajcluster.TrajClusterAlg.AngleRanges: #unclear what's used for
+physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep: [PAR6, PAR7] # [4,4] 
+#physics.producers.trajcluster.TrajClusterAlg.MultHitSep: #probably not significant for our purpose
+#physics.producers.trajcluster.TrajClusterAlg.ProjectionErrFactor: #these next 2 parameters are correlated. We'll keep the default for the time being
+
+
+#physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: # OK default
+physics.producers.trajcluster.TrajClusterAlg.ChargeCuts: [PAR8, PAR9, PAR10]   #[4, 0.15, 0.25]  
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 1
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipWithSignal: 10
+physics.producers.trajcluster.TrajClusterAlg.MaxChi: 10
+physics.producers.trajcluster.TrajClusterAlg.KinkCuts:  [PAR11, PAR12, PAR13] #[ 0.2, 1.5, 3 ] 
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   [ "ChkStop", "ChkAllStop", "EndMerge" ]
+#physics.producers.trajcluster.TrajClusterAlg.ChkStopCuts
+physics.producers.trajcluster.TrajClusterAlg.QualityCuts:[PAR14, PAR15] # [0.8, 3.]
+physics.producers.trajcluster.TrajClusterAlg.HitErrFac: PAR16 #1.4
+physics.producers.trajcluster.TrajClusterAlg.MatchTruth: [1, 1, 0.5, 10 ]
+physics.producers.trajcluster.TrajClusterAlg.Mode: PAR17 #1  walk from upstream to downstream
+
+##################################################
+### Tracking parameters
+physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
+physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtracktc.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtracktc.PMAlgTracking.RunVertexing: true
+
+##################################################
+### Calorimetry parameters
+physics.producers.caldata.DodQdxCalib:           false
+physics.producers.caldata.DigitModuleLabel:                     "daq"
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.084, 0.0910]
+physics.producers.calo.TrackModuleLabel:      "pmtracktc"
+physics.producers.calo.SpacePointModuleLabel: "pmtracktc"
+physics.producers.calo.UseArea:               "true"
+
+
+
+
+##################################################
+## Analyzer paramters
+#physics.analyzers.anatree.TrackModuleLabel:   "pmtracktc"
+#physics.analyzers.anatree.ClusterModuleLabel: "trajcluster"
+#physics.analyzers.anatree.HitsModuleLabel:    "gaushit"
+############# 
