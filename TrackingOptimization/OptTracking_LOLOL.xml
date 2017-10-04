@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<!-- Production Project -->
+<!-- for v1 first try with v06_15_00, just 1000, 10 jobs -->
+
+<!DOCTYPE project [
+<!ENTITY release "v06_34_01">
+<!ENTITY file_type "MC">
+<!ENTITY run_type "MC">
+<!ENTITY name "PionMC">
+<!ENTITY tag "BatchJobs">
+<!ENTITY myoutdir "/pnfs/lariat/scratch/users/elenag/TrackingOPT">
+<!ENTITY myworkdir "/pnfs/lariat/scratch/users/elenag">
+<!-- Make sure number of jobs == number of files in input list -->
+<!ENTITY njobs "20">
+]>
+
+<project name="&name;">
+
+  <!-- Project size -->
+  <!-- Make sure number of events / number of jobs <= number of events in each file -->
+  <numevents>-1</numevents>
+  <!-- Try to do 750 events/job  ~5hr for reco -->
+
+  <!-- Operating System -->
+  <os>SL6</os>
+
+  <!-- Batch resources -->
+  <resource>DEDICATED,OPPORTUNISTIC</resource>
+
+  <!-- Larsoft information -->
+  <larsoft>
+      <tag>&release;</tag>
+      <qual>e14:prof</qual>
+      <local>/pnfs/lariat/persistent/users/elenag/local/localProducts_v06_34_01_e14_prof_TrackingOpt.tar</local>
+ </larsoft>
+
+  <!-- Project stages -->
+
+  <stage name="effAlgoLOLOLO">
+<!--      <inputmode>textfile</inputmode>-->
+      <inputdef>elenag_PionOptMCSet_20170914_2</inputdef> 
+      <fcl>/lariat/app/users/elenag/v06_34_01/lariatsoft/TruthPion/trackingEff/TrajClusterOpt/TrackingOptimization/fcl/TrjClusterBaseLArIAT_LOLOLO.fcl</fcl>
+      <outdir>&myoutdir;/LOLOLO/&release;</outdir>
+      <workdir>&myworkdir;</workdir>
+      <numjobs>&njobs;</numjobs>
+      <jobsub>--expected-lifetime=medium</jobsub>
+  </stage>
+
+
+
+  <!-- file type -->
+  <filetype>&file_type;</filetype>
+
+  <!-- run type -->
+  <runtype>&run_type;</runtype>
+
+</project>
