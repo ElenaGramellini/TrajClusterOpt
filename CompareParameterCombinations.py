@@ -38,7 +38,7 @@ def errorPropEff (A, B, eff):
 
 
 
-dirName = "/lariat/data/users/elenag/trackingOpt/paramChange/"
+dirName = "/lariat/data/users/elenag/trackingOpt/optimizationData/"
 onlyfiles = [f for f in listdir(dirName) if isfile(join(dirName, f)) and f.find(".root") != -1]
 combo     = [x.replace('.root', '').replace('anatree_', '') for x in onlyfiles]
 
@@ -120,7 +120,6 @@ for i in xrange(nComboAvailable) :
     print "vtx dist < 1 cm      : ",'%.2f' % vtxEffN   , "% times"
     print "end dist < 1 cm      : ",'%.2f' % endEffN   , "% times"
     print "reco - true L < 5 cm : ",'%.2f' % deltaLEffN, "% times"
-    
     # Write this histos to file
     outfile.cd()
     _hTrueL            .Write("htrueL"+thisSetName)

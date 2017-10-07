@@ -7,10 +7,10 @@
 <!ENTITY release "v06_34_01">
 <!ENTITY file_type "MC">
 <!ENTITY run_type "MC">
-<!ENTITY name "PionMC">
+<!ENTITY name "PionMCLOLOLO">
 <!ENTITY tag "BatchJobs">
 <!ENTITY myoutdir "/pnfs/lariat/scratch/users/elenag/TrackingOPT">
-<!ENTITY myworkdir "/pnfs/lariat/scratch/users/elenag">
+<!ENTITY myworkdir "/pnfs/lariat/scratch/users/elenag/work/LOLOLO">
 <!-- Make sure number of jobs == number of files in input list -->
 <!ENTITY njobs "20">
 ]>

@@ -4,13 +4,6 @@ import math
 
 
 #Define the parameter space
-KINK1 = [0.1,0.2,0.3]
-KINK2 = [1.2,1.5,1.7]
-KINK3 = [1,3,5]
-QUAL1 = [0.7,0.8,0.9]
-QUAL2 = [1,3,5]
-
-
 KINK1  = [0.1,0.2,0.3]
 KINK2  = [1.2,1.5,1.7]
 KINK3  = [1,3,5]

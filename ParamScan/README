@@ -12,3 +12,9 @@ Preparation steps:
 
 3) evaluate if something in the recoL-trueL plot changed compared to the baseline.
 
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Results:
+At a first glance, the parameters that seems interesting are:
+- HitErrFrac ( PAR16 )
+- Mode       ( PAR17 ) 
+- KinkCut    ( PAR11, PAR12, PAR13 )
